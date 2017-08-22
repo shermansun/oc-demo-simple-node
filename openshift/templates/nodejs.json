@@ -225,7 +225,7 @@
       "displayName": "Name",
       "description": "The name assigned to all of the frontend objects defined in this template.",
       "required": true,
-      "value": "os-simple-nodejs"
+      "value": "myapp"
     },
     {
       "name": "NAMESPACE",
@@ -239,7 +239,7 @@
       "displayName": "Memory Limit",
       "description": "Maximum amount of memory the container can use.",
       "required": true,
-      "value": "512Mi"
+      "value": "256Mi"
     },
     {
       "name": "SOURCE_REPOSITORY_URL",
