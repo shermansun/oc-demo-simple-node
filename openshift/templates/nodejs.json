@@ -5,16 +5,16 @@
     "name": "os-simple-nodejs",
     "annotations": {
       "openshift.io/display-name": "Node.js",
-      "description": "Simple NodeJS app",
+      "description": "An example Node.js application with no database. For more information about using this template, including OpenShift considerations, see https://github.com/openshift/nodejs-ex/blob/master/README.md.",
       "tags": "quickstart,nodejs",
       "iconClass": "icon-nodejs",
-      "template.openshift.io/long-description": "Simple NodeJS app with no database",
+      "template.openshift.io/long-description": "This template defines resources needed to develop a NodeJS application, including a build configuration and application deployment configuration.  It does not include a database.",
       "template.openshift.io/provider-display-name": "Red Hat, Inc.",
-      "template.openshift.io/documentation-url": "https://github.com/openshift/nodejs-ex",
+      "template.openshift.io/documentation-url": "https://github.com/shermansun/oc-demo-simple-node",
       "template.openshift.io/support-url": "https://access.redhat.com"
     }
   },
-  "message": "Simple NodeJS app",
+  "message": "The following service(s) have been created in your project: ${NAME}.\n\nFor more information about using this template, including OpenShift considerations, see https://github.com/openshift/nodejs-ex/blob/master/README.md.",
   "labels": {
     "template": "os-simple-nodejs"
   },
@@ -43,10 +43,12 @@
     },
     {
       "kind": "Route",
+      "apiVersion": "v1",
       "metadata": {
         "name": "${NAME}"
       },
       "spec": {
+        "host": "${APPLICATION_DOMAIN}",
         "to": {
           "kind": "Service",
           "name": "${NAME}"
@@ -71,6 +73,61 @@
         "annotations": {
           "description": "Defines how to build the application",
           "template.alpha.openshift.io/wait-for-ready": "true"
+        }
+      },
+      "spec": {
+        "source": {
+          "type": "Git",
+          "git": {
+            "uri": "${SOURCE_REPOSITORY_URL}",
+            "ref": "${SOURCE_REPOSITORY_REF}"
+          },
+          "contextDir": "${CONTEXT_DIR}"
+        },
+        "strategy": {
+          "type": "Source",
+          "sourceStrategy": {
+            "from": {
+              "kind": "ImageStreamTag",
+              "namespace": "${NAMESPACE}",
+              "name": "nodejs:6"
+            },
+            "env":  [
+              {
+                  "name": "NPM_MIRROR",
+                  "value": "${NPM_MIRROR}"
+              }
+            ]
+          }
+        },
+        "output": {
+          "to": {
+            "kind": "ImageStreamTag",
+            "name": "${NAME}:latest"
+          }
+        },
+        "triggers": [
+          {
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          },
+          {
+            "type": "GitHub",
+            "github": {
+              "secret": "${GITHUB_WEBHOOK_SECRET}"
+            }
+          },
+          {
+            "type": "Generic",
+            "generic": {
+              "secret": "${GENERIC_WEBHOOK_SECRET}"
+            }
+          }
+        ],
+        "postCommit": {
+          "script": "npm test"
         }
       }
     },
@@ -106,7 +163,7 @@
             "type": "ConfigChange"
           }
         ],
-        "replicas": 3,
+        "replicas": 1,
         "selector": {
           "name": "${NAME}"
         },
@@ -151,9 +208,9 @@
                 "env": [
                 ],
                 "resources": {
-		      "limits": {
-			  "memory": "${MEMORY_LIMIT}"
-		      }
+          "limits": {
+        "memory": "${MEMORY_LIMIT}"
+          }
                 }
               }
             ]
@@ -168,7 +225,7 @@
       "displayName": "Name",
       "description": "The name assigned to all of the frontend objects defined in this template.",
       "required": true,
-      "value": "nodejs-example"
+      "value": "os-simple-nodejs"
     },
     {
       "name": "NAMESPACE",
@@ -189,7 +246,7 @@
       "displayName": "Git Repository URL",
       "description": "The URL of the repository with your application source code.",
       "required": true,
-      "value": "https://github.com/openshift/nodejs-ex.git"
+      "value": "https://github.com/shermansun/oc-demo-simple-node"
     },
     {
       "name": "SOURCE_REPOSITORY_REF",
